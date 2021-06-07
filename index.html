@@ -19,7 +19,7 @@
     <div class="container">
       <!---商品列表-->
       <div class="row d-flex justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-10">
           <table class="table">
             <thead>
               <tr>
@@ -44,6 +44,7 @@
               </tr>
             </tbody>
           </table>
+          <pagination :pagination="pagination" @get-product="getProduct"></pagination>
         </div>
       </div>
 
@@ -97,6 +98,7 @@
   <script type="module">
     import detailProduct from './js/detailProduct.js';
     import validForm from './js/validForm.js';
+    import pagination from './js/pagination.js';
 
     // 加入規則
     VeeValidate.defineRule('email', VeeValidateRules['email']);
@@ -121,20 +123,23 @@
           },
           tempProduct: {},
           cartList: [],
+          pagination: {}
         }
       },
       components: {
         detailProduct,
-        validForm
+        validForm,
+        pagination
       },
       methods: {
-        getProduct() {
+        getProduct(page = 1) {
           // 取得商品列表
-          const url = `${apiUrl}api/${path}/products`;
+          const url = `${apiUrl}api/${path}/products?page=${page}`;
           axios.get(url)
             .then(res => {
               if (res.data.success) {
                 this.productList = res.data.products;
+                this.pagination = res.data.pagination;
               } else {
                 alert('商品取得失敗');
               }
