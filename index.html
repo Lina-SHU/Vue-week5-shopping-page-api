@@ -32,7 +32,8 @@
             <tbody>
               <tr v-for="product in productList" :key="product.id">
                 <td width="25%">
-                  <div class="productImg" style="height: 120px; object-fit:cover; background-position: center center;" :style="{'background-image': `url(${product.imageUrl})` }"></div>
+                  <div class="productImg" style="height: 120px; object-fit:cover; background-position: center center;"
+                    :style="{'background-image': `url(${product.imageUrl})` }"></div>
                 </td>
                 <td>{{ product.title }}</td>
                 <td>{{ product.price }}</td>
@@ -47,27 +48,35 @@
       </div>
 
       <!---購物車列表-->
-      <table class="table">
+      <button class="btn btn-outline-dark" @click="deleteCarts" v-if="cartList.length > 1">刪除所有購物車商品</button>
+      <table class="table mt-3">
         <thead>
           <tr>
-            <th scope="col">#</th>
-            <th scope="col">First</th>
-            <th scope="col">Last</th>
-            <th scope="col">Handle</th>
+            <th scope="col"></th>
+            <th scope="col">商品圖片</th>
+            <th scope="col">商品名稱</th>
+            <th scope="col">商品數量</th>
+            <th scope="col">商品金額</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th scope="row">1</th>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>@mdo</td>
-          </tr>
+          <template v-if="cartList.length !==0">
+            <tr v-for="item in cartList" :key="item.id" class="border-bottom">
+              <td class="align-middle text-center"><i class="fas fa-times text-danger fa-1x" @click="deleteCartItem(item.id)" style="cursor: pointer;"></i></td>
+              <td><div style="height: 120px; object-fit:cover; background-position: center center;"
+                :style="{'background-image': `url(${item.product.imageUrl})`}"></div></td>
+              <td>{{ item.product.title }}</td>
+              <td width="20%">
+                <input type="number" min="1" class="form-control" v-model.number="item.qty"  @change="editCart(item)">
+              </td>
+              <td>{{ item.product.price * item.qty  }}</td>
+            </tr>
+          </template>
         </tbody>
       </table>
     </div>
-    
-    <detail-product ref="detailModal" :product="tempProduct"></detail-product>
+
+    <detail-product ref="detailModal" :product="tempProduct" @add-cart="addCart"></detail-product>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
@@ -76,8 +85,10 @@
 
 
   <script type="module">
+    import detailProduct from './js/detailProduct.js';
+
     const apiUrl = 'https://vue3-course-api.hexschool.io/';
-    const path= 'linachen';
+    const path = 'linachen';
 
     const app = Vue.createApp({
       data() {
@@ -85,26 +96,30 @@
           productList: {
             "imagesUrl": []
           },
-          tempProduct: {}
+          tempProduct: {},
+          cartList: []
         }
       },
-      methods:{
-        getProduct(){
+      components: {
+        detailProduct
+      },
+      methods: {
+        getProduct() {
           // 取得商品列表
           const url = `${apiUrl}api/${path}/products`;
           axios.get(url)
-          .then(res=>{
-            if(res.data.success){
-              this.productList = res.data.products;
-            }else{
-              alert('商品取得失敗');
-            }
-          })
-          .catch(err=>{
-            console.log(err);
-          })
+            .then(res => {
+              if (res.data.success) {
+                this.productList = res.data.products;
+              } else {
+                alert('商品取得失敗');
+              }
+            })
+            .catch(err => {
+              console.log(err);
+            })
         },
-        openModal(id){
+        openModal(id) {
           // 取得單一商品
           const url = `${apiUrl}api/${path}/product/${id}`;
           axios.get(url)
@@ -120,72 +135,91 @@
             })
           this.$refs.detailModal.openModal();
         },
-        addCart(id, qty = 1){
+        addCart(id, qty = 1) {
           // 加入購物車
-          const url = `${apiUrl}api/${path}/products`;
+          const url = `${apiUrl}api/${path}/cart`;
+          axios.post(url, {data: { "product_id": id, "qty": qty}})
+            .then(res => {                      
+              if (res.data.success) {
+                alert('成功加入購物車');
+                this.$refs.detailModal.hideModal();
+                this.getCart();
+              } else {
+                alert('加入購物車失敗');
+              }
+            })
+            .catch(err => {
+              console.log(err);
+            })
+        },
+        getCart() {
+          // 取得購物車列表
+          const url = `${apiUrl}api/${path}/cart`;
           axios.get(url)
             .then(res => {
-              this.productList = res.data.products;
+              console.log(res);
+              if (res.data.success) {
+                this.cartList = res.data.data.carts;
+              } else {
+                alert('取得購物車失敗');
+              }
+            })
+            .catch(err => {
+              console.log(err);
+            })
+        },
+        editCart(item){
+          // 更新購物車數量
+          const url = `${apiUrl}api/${path}/cart/${item.id}`;
+          axios.put(url, { "data": { "product_id": item.product.id, "qty": item.qty } })
+            .then(res => {
+              if (res.data.success) {
+                
+                this.getCart();
+              } else {
+                alert('更新購物車失敗');
+              }
+            })
+            .catch(err => {
+              console.log(err);
+            })
+        },
+        deleteCarts(){
+          // 刪除所有購物車商品
+          const url = `${apiUrl}api/${path}/carts`;
+          axios.delete(url)
+            .then(res => {
+              if (res.data.success) {
+                alert('刪除購物車所有商品成功');
+                this.getCart();
+              } else {
+                alert('刪除購物車所有商品失敗');
+              }
+            })
+            .catch(err => {
+              console.log(err);
+            })
+        },
+        deleteCartItem(id){
+          // 刪除購物車單一商品
+          const url = `${apiUrl}api/${path}/cart/${id}`;
+          axios.delete(url)
+            .then(res => {
+              if (res.data.success) {
+                alert('刪除購物車商品成功');
+                this.getCart();
+              } else {
+                alert('刪除購物車商品失敗');
+              }
+            })
+            .catch(err => {
+              console.log(err);
             })
         }
       },
-      mounted(){
+      mounted() {
         this.getProduct();
-      }
-    });
-
-    app.component('detailProduct', {
-      data(){
-        return {
-          tempProduct: {},
-          modal: '',
-          qty: 1
-        } 
-      },
-      props:['product'],
-      template:`
-      <div class="modal fade" ref="detailModal" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <!---<div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLabel">{{ tempProduct.title }}</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>--->
-            <div class="modal-body">
-              <div class="row">
-                <div class="col-md-4">
-                  <img :src="tempProduct.imageUrl" alt="produtc picture" class="img-fluid" height="200" >
-                </div>
-                <div class="col-md-8">
-                  <h3>{{ tempProduct.title }}</h3>
-                  <p class="text-secondary"><del>原價：{{ tempProduct.origin_price }} 元</del></p>
-                  <p class="h4 text-danger">優惠價：{{ tempProduct.price }} 元</p>
-                  <div class="input-group mb-3">
-                    <input type="number" min="0" :v-model="qty" class="form-control" :value="qty">
-                    <button type="button" class="btn btn-primary">加入購物車</button>
-                  </div>
-                </div>
-              </div> 
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      `,
-      methods:{
-        openModal(){
-          this.modal.show();
-        }
-      },
-      watch:{
-        product(){
-          this.tempProduct = this.product;
-        }
-      },
-      mounted(){
-        this.modal = new bootstrap.Modal(this.$refs.detailModal);
+        this.getCart();
       }
     });
 
