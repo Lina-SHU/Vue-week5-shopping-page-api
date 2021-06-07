@@ -24,6 +24,7 @@ export default{
                   <h3>{{ tempProduct.title }}</h3>
                   <p class="text-secondary"><del>原價：{{ tempProduct.origin_price }} 元</del></p>
                   <p class="h4 text-danger">優惠價：{{ tempProduct.price }} 元</p>
+                  <p>商品資訊：{{ tempProduct.content }} </p>
                   <div class="input-group mb-3">
                     <input type="number" min="0" v-model.number="qty" class="form-control">
                     <button type="button" class="btn btn-primary" @click="$emit('add-cart', tempProduct.id,  qty)">加入購物車</button>
