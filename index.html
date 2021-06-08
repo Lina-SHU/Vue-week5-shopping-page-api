@@ -141,7 +141,7 @@
               if (res.data.success) {
                 alert('成功加入購物車');
                 this.$refs.detailModal.hideModal();
-                // this.getCart();
+                this.getCart();
               } else {
                 alert('加入購物車失敗');
               }
