@@ -68,7 +68,7 @@ export default {
     }
   },
   template: `
-  <button class="btn btn-outline-dark" @click="deleteCarts" v-if="carts.length > 1">刪除所有購物車商品</button>
+      <button class="btn btn-outline-dark" @click="deleteCarts" v-if="carts.carts && carts.carts.length >1">刪除所有購物車商品</button>
       <h3 class="text-center mt-5">購物車清單</h3>
       <table class="table mt-3">
         <thead>
