@@ -60,7 +60,7 @@ export default {
             </div>
             <div class="mb-3">
               <label for="phone" class="form-label">電話 <span class="text-danger">(必填)</span></label>
-              <v-field type="text" class="form-control" id="phone" name="電話" :rules="isPhone" rules="required"
+              <v-field type="tel" class="form-control" id="phone" name="電話" :rules="isPhone" rules="required"
                 placeholder="請輸入電話" :class="{ 'is-invalid': errors['電話']}" v-model="user.tel"></v-field>
               <error-message name="電話" class="invalid-feedback"></error-message>
             </div>

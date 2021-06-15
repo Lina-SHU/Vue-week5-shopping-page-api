@@ -91,7 +91,7 @@
           tempProduct: {},
           cartList:{},
           pagination: {},
-          isLoading: true
+          isLoading: false
         }
       },
       components: {
@@ -103,12 +103,14 @@
       methods: {
         getProduct(page = 1) {
           // 取得商品列表
+          this.isLoading = true;
           const url = `${apiUrl}api/${path}/products?page=${page}`;
           axios.get(url)
             .then(res => {
               if (res.data.success) {
                 this.productList = res.data.products;
                 this.pagination = res.data.pagination;
+                this.isLoading = false;
               } else {
                 alert('商品取得失敗');
               }
@@ -135,11 +137,13 @@
         },
         addCart(id, qty = 1) {
           // 加入購物車
+          this.isLoading = true;
           const url = `${apiUrl}api/${path}/cart`;
           axios.post(url, { data: { "product_id": id, "qty": qty } })
             .then(res => {
               if (res.data.success) {
                 alert('成功加入購物車');
+                this.isLoading = false;
                 this.$refs.detailModal.hideModal();
                 this.getCart();
               } else {
@@ -152,11 +156,13 @@
         },
         getCart() {
           // 取得購物車列表
+          this.isLoading = true;
           const url = `${apiUrl}api/${path}/cart`;
           axios.get(url)
             .then(res => {
               if (res.data.success) {
                 this.cartList = res.data.data;
+                this.isLoading = false;
               } else {
                 alert('取得購物車失敗');
               }
@@ -169,9 +175,6 @@
       mounted() {
         this.getProduct();
         this.getCart();
-        setTimeout(() => {
-          this.isLoading = false;
-        }, 2000)
       }
     });
 
